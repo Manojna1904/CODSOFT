@@ -1,4 +1,4 @@
-# Titanic Survival Prediction without scikit-learn (Simple)
+# Titanic Survival Prediction (Simple)
 
 import pandas as pd
 import numpy as np
@@ -54,3 +54,4 @@ test_preds = (sigmoid(X_test @ theta) >= 0.5).astype(int).ravel()
 output = pd.DataFrame({"PassengerId": PassengerId, "Survived": test_preds})
 output.to_csv("submission.csv", index=False)
 print("submission.csv created")
+
