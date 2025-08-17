@@ -1,6 +1,7 @@
 git init
 git add .
-git commit -m "Initial commit - Titanic prediction without sklearn"
+git commit -m "Initial commit - Titanic prediction"
 git remote add origin https://github.com/YOUR_USERNAME/titanic-prediction.git
 git branch -M main
 git push -u origin main
+
