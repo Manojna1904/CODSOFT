@@ -1,0 +1,56 @@
+# Titanic Survival Prediction without scikit-learn (Simple)
+
+import pandas as pd
+import numpy as np
+
+train = pd.read_csv("train.csv")
+test = pd.read_csv("test.csv")
+
+train["Age"].fillna(train["Age"].median(), inplace=True)
+test["Age"].fillna(test["Age"].median(), inplace=True)
+train["Embarked"].fillna(train["Embarked"].mode()[0], inplace=True)
+test["Embarked"].fillna(test["Embarked"].mode()[0], inplace=True)
+test["Fare"].fillna(test["Fare"].median(), inplace=True)
+
+train.drop(["Cabin", "Name", "Ticket"], axis=1, inplace=True)
+test.drop(["Cabin", "Name", "Ticket"], axis=1, inplace=True)
+
+train["Sex"] = train["Sex"].map({"male": 0, "female": 1})
+test["Sex"] = test["Sex"].map({"male": 0, "female": 1})
+
+train = pd.get_dummies(train, columns=["Embarked"], drop_first=True)
+test = pd.get_dummies(test, columns=["Embarked"], drop_first=True)
+
+X = train.drop(["Survived", "PassengerId"], axis=1).values
+y = train["Survived"].values.reshape(-1, 1)
+X_test = test.drop(["PassengerId"], axis=1).values
+PassengerId = test["PassengerId"]
+
+X = (X - X.mean(axis=0)) / X.std(axis=0)
+X_test = (X_test - X_test.mean(axis=0)) / X_test.std(axis=0)
+
+X = np.c_[np.ones((X.shape[0], 1)), X]
+X_test = np.c_[np.ones((X_test.shape[0], 1)), X_test]
+
+def sigmoid(z):
+    return 1 / (1 + np.exp(-z))
+
+def train(X, y, lr=0.1, epochs=2000):
+    m, n = X.shape
+    theta = np.zeros((n, 1))
+    for i in range(epochs):
+        y_hat = sigmoid(X @ theta)
+        gradient = (1/m) * (X.T @ (y_hat - y))
+        theta -= lr * gradient
+    return theta
+
+theta = train(X, y)
+
+train_preds = (sigmoid(X @ theta) >= 0.5).astype(int)
+print("Training Accuracy:", (train_preds == y).mean())
+
+test_preds = (sigmoid(X_test @ theta) >= 0.5).astype(int).ravel()
+
+output = pd.DataFrame({"PassengerId": PassengerId, "Survived": test_preds})
+output.to_csv("submission.csv", index=False)
+print("submission.csv created")
